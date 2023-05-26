@@ -1,0 +1,162 @@
+int clusterLoadConfig ( char * filename ) {
+FILE * fp = fopen ( filename , STR_ ) ;
+struct stat sb ;
+char * line ;
+int maxline , j ;
+
+if ( fp == NULL ) {
+if ( errno == ENOENT ) {
+return C_ERR ;
+} else {
+serverLog ( LL_WARNING ,
+STR_ ,
+filename , strerror ( errno ) ) ;
+exit ( NUM_ ) ;
+}
+}
+if ( fstat ( fileno ( fp ) , & sb ) != - NUM_ && sb . st_size == NUM_ ) {
+fclose ( fp ) ;
+return C_ERR ;
+}
+maxline = NUM_ + CLUSTER_SLOTS * NUM_ ;
+line = zmalloc ( maxline ) ;
+while ( fgets ( line , maxline , fp ) != NULL ) {
+int argc ;
+sds * argv ;
+clusterNode * n , * master ;
+char * p , * s ;
+if ( line [ NUM_ ] == STR_ || line [ NUM_ ] == STR_ ) continue ;
+argv = sdssplitargs ( line , & argc ) ;
+if ( argv == NULL ) goto fmterr ;
+if ( strcasecmp ( argv [ NUM_ ] , STR_ ) == NUM_ ) {
+for ( j = NUM_ ; j < argc ; j += NUM_ ) {
+if ( strcasecmp ( argv [ j ] , STR_ ) == NUM_ ) {
+server . cluster -> currentEpoch =
+strtoull ( argv [ j + NUM_ ] , NULL , NUM_ ) ;
+} else if ( strcasecmp ( argv [ j ] , STR_ ) == NUM_ ) {
+server . cluster -> lastVoteEpoch =
+strtoull ( argv [ j + NUM_ ] , NULL , NUM_ ) ;
+} else {
+serverLog ( LL_WARNING ,
+STR_ ,
+argv [ j ] ) ;
+}
+}
+sdsfreesplitres ( argv , argc ) ;
+continue ;
+}
+if ( argc < NUM_ ) goto fmterr ;
+n = clusterLookupNode ( argv [ NUM_ ] ) ;
+if ( ! n ) {
+n = createClusterNode ( argv [ NUM_ ] , NUM_ ) ;
+clusterAddNode ( n ) ;
+}
+if ( ( p = strrchr ( argv [ NUM_ ] , STR_ ) ) == NULL ) goto fmterr ;
+* p = STR_ ;
+memcpy ( n -> ip , argv [ NUM_ ] , strlen ( argv [ NUM_ ] ) + NUM_ ) ;
+char * port = p + NUM_ ;
+char * busp = strchr ( port , STR_ ) ;
+if ( busp ) {
+* busp = STR_ ;
+busp ++ ;
+}
+n -> port = atoi ( port ) ;
+n -> cport = busp ? atoi ( busp ) : n -> port + CLUSTER_PORT_INCR ;
+p = s = argv [ NUM_ ] ;
+while ( p ) {
+p = strchr ( s , STR_ ) ;
+if ( p ) * p = STR_ ;
+if ( ! strcasecmp ( s , STR_ ) ) {
+serverAssert ( server . cluster -> myself == NULL ) ;
+myself = server . cluster -> myself = n ;
+n -> flags |= CLUSTER_NODE_MYSELF ;
+} else if ( ! strcasecmp ( s , STR_ ) ) {
+n -> flags |= CLUSTER_NODE_MASTER ;
+} else if ( ! strcasecmp ( s , STR_ ) ) {
+n -> flags |= CLUSTER_NODE_SLAVE ;
+} else if ( ! strcasecmp ( s , STR_ ) ) {
+n -> flags |= CLUSTER_NODE_PFAIL ;
+} else if ( ! strcasecmp ( s , STR_ ) ) {
+n -> flags |= CLUSTER_NODE_FAIL ;
+n -> fail_time = mstime ( ) ;
+} else if ( ! strcasecmp ( s , STR_ ) ) {
+n -> flags |= CLUSTER_NODE_HANDSHAKE ;
+} else if ( ! strcasecmp ( s , STR_ ) ) {
+n -> flags |= CLUSTER_NODE_NOADDR ;
+} else if ( ! strcasecmp ( s , STR_ ) ) {
+
+} else {
+serverPanic ( STR_ ) ;
+}
+if ( p ) s = p + NUM_ ;
+}
+if ( argv [ NUM_ ] [ NUM_ ] != STR_ ) {
+master = clusterLookupNode ( argv [ NUM_ ] ) ;
+if ( ! master ) {
+master = createClusterNode ( argv [ NUM_ ] , NUM_ ) ;
+clusterAddNode ( master ) ;
+}
+n -> slaveof = master ;
+clusterNodeAddSlave ( master , n ) ;
+}
+if ( atoi ( argv [ NUM_ ] ) ) n -> ping_sent = mstime ( ) ;
+if ( atoi ( argv [ NUM_ ] ) ) n -> pong_received = mstime ( ) ;
+
+
+n -> configEpoch = strtoull ( argv [ NUM_ ] , NULL , NUM_ ) ;
+for ( j = NUM_ ; j < argc ; j ++ ) {
+int start , stop ;
+
+if ( argv [ j ] [ NUM_ ] == STR_ ) {
+
+int slot ;
+char direction ;
+clusterNode * cn ;
+
+p = strchr ( argv [ j ] , STR_ ) ;
+serverAssert ( p != NULL ) ;
+* p = STR_ ;
+direction = p [ NUM_ ] ;
+slot = atoi ( argv [ j ] + NUM_ ) ;
+p += NUM_ ;
+cn = clusterLookupNode ( p ) ;
+if ( ! cn ) {
+cn = createClusterNode ( p , NUM_ ) ;
+clusterAddNode ( cn ) ;
+}
+if ( direction == STR_ ) {
+server . cluster -> migrating_slots_to [ slot ] = cn ;
+} else {
+server . cluster -> importing_slots_from [ slot ] = cn ;
+}
+continue ;
+} else if ( ( p = strchr ( argv [ j ] , STR_ ) ) != NULL ) {
+* p = STR_ ;
+start = atoi ( argv [ j ] ) ;
+stop = atoi ( p + NUM_ ) ;
+} else {
+start = stop = atoi ( argv [ j ] ) ;
+}
+while ( start <= stop ) clusterAddSlot ( n , start ++ ) ;
+}
+
+sdsfreesplitres ( argv , argc ) ;
+}
+if ( server . cluster -> myself == NULL ) goto fmterr ;
+
+zfree ( line ) ;
+fclose ( fp ) ;
+
+serverLog ( LL_NOTICE , STR_ , myself -> name ) ;
+if ( clusterGetMaxEpoch ( ) > server . cluster -> currentEpoch ) {
+server . cluster -> currentEpoch = clusterGetMaxEpoch ( ) ;
+}
+return C_OK ;
+
+fmterr :
+serverLog ( LL_WARNING ,
+STR_ ) ;
+zfree ( line ) ;
+if ( fp ) fclose ( fp ) ;
+exit ( NUM_ ) ;
+}
