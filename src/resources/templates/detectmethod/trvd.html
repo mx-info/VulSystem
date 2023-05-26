@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dashboard Template for Bootstrap</title>
+    <!-- Bootstrap core CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link th:href="@{/css/dashboard.css}" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row bg-light">
+        <!--    <h2 class="h2 text-info text-center">融合AST分割和深度语义抽取的函数级漏洞检测系统</h2>-->
+        <div class="col-md-2">
+            <h4 class="text-success">[[${session.loginUser}]]</h4>
+        </div>
+        <div class="col-md-9">
+            <h2 class="h2 text-info text-center">融合AST分割和深度语义抽取的函数级漏洞检测系统</h2>
+        </div>
+        <div class="col-md-1">
+            <ul class="navbar-nav px-3">
+                <li class="nav-item text-nowrap">
+                    <a class="nav-link text-danger" th:href="@{/user/logout}">注销</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <br>
+
+    <div class="row">
+        <div class="col-md-2">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a th:class="${active=='main.html'?'nav-link active':'nav-link'}" th:href="@{/main.html}">
+                        首页 <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${active=='dataset.html'?'nav-link active':'nav-link'}" th:href="@{/templates/dataset.html}">
+                        数据集 <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${active=='preprocess.html'?'nav-link active':'nav-link'}"
+                       th:href="@{/templates/preprocess.html}">
+                        数据预处理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:class="${active=='detect.html.html'?'nav-link active':'nav-link'}" th:href="@{/templates/detect.html}">
+                        漏洞检测
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        个人信息
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-10">
+
+            <div class="row">
+                <div class="col-md-3">
+                    <h6>待检测代码</h6>
+                </div>
+                <div class="col-md-6">
+                    <form class="form-inline" role="form" th:action="@{/upload}" enctype="multipart/form-data" method="post">
+                        <div class="form-group">
+                            <label class="sr-only" for="multipartFile">文件输入</label>
+                            <input type="file" id="multipartFile" name="multipartFile">
+                        </div>
+                        <button type="submit" class="btn btn-default">提交</button>
+                    </form>
+                </div>
+                <div class="col-md-3">
+                </div>
+            </div>
+            <br>
+
+            <div class="row">
+                <div class="col-md-2">
+                    <h6>标准化结果</h6>
+                </div>
+                <div class="col-md-10" th:each="fun:${funs}">
+                    <li class="list-group-item"><span th:text="${fun}"></span></li>
+<!--                    <li class="list-group-item">2.</li>-->
+<!--                    <li class="list-group-item">3.</li>-->
+<!--                    <li class="list-group-item">4.</li>-->
+<!--                    <li class="list-group-item">5.</li>-->
+                    </ul>
+                </div>
+            </div>
+            <br>
+
+            <div class="row">
+                <div class="col-md-2">
+                    <h6>抽象语法树</h6>
+                </div>
+                <div class="col-md-10">
+                    <h4>AST</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <h6>有序子树序列集</h6>
+                </div>
+                <div class="col-md-10">
+                    <ul class="list-group">
+                        <li class="list-group-item">1.</li>
+                        <li class="list-group-item">2.</li>
+                        <li class="list-group-item">3.</li>
+                        <li class="list-group-item">4.</li>
+                        <li class="list-group-item">5.</li>
+                    </ul>
+                </div>
+            </div>
+            <br>
+
+            <div class="row">
+                <div class="col-md-2">
+                    <h6>检测结果</h6>
+                </div>
+                <div class="col-md-10">
+                    <table class="table table-condensed">
+                        <caption></caption>
+                        <thead>
+                        <tr>
+                            <th>函数</th>
+                            <th>结果</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Tanmay</td>
+                            <td>Bangalore</td>></tr>
+                        <tr>
+                            <td>Sachin</td>
+                            <td>Mumbai</td></tr>
+                        <tr>
+                            <td>Uma</td>
+                            <td>Pune</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
